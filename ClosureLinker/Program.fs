@@ -1,6 +1,4 @@
 ﻿open System
-open System.Collections
-open System.Collections.Generic
 open System.IO
 open System.Text
 open System.Text.RegularExpressions
@@ -8,7 +6,7 @@ open System.Xml.Linq
 open Microsoft.FSharp.Collections
 
 type Source =
-  { Path: string; Provides: list<string>; Requires: list<string>; Text: string }
+  { Path: string; Provides: string list; Requires: string list; Text: string }
   override x.ToString() = x.Path
 
 type Output = { Namespace: string; Flags: string list; File: string }
@@ -73,10 +71,10 @@ let getClosureBaseFile sources =
   sources
     |> Seq.map (fun s -> (s.Path, s))
     |> Seq.filter isBaseFile
-    |> Seq.collect (fun (p, s) ->  s.Text.Split '\n' |> PSeq.filter hasGoogDefinition |> PSeq.map (fun _ -> p))
+    |> Seq.collect (fun (p, s) -> s.Text.Split '\n' |> PSeq.filter hasGoogDefinition |> PSeq.map (fun _ -> p))
     |> Seq.head
 
-let rec resolveDependencies ns (depsList: System.Collections.Generic.List<string>) (providesMap: Map<string, Source>) traversalPath =
+let rec resolveDependencies ns (depsList: ResizeArray<string>) (providesMap: Map<string, Source>) traversalPath =
   if not (providesMap.ContainsKey ns) then printf "Could not find required namespace %s." ns
   if traversalPath |> List.exists (fun x -> x = ns) then printf "Circular dependency on %s." ns
   let source = providesMap.[ns]
@@ -88,10 +86,10 @@ let rec resolveDependencies ns (depsList: System.Collections.Generic.List<string
     depsList
 
 let getFilesFlags ns sources providesMap =
-  let baseFile = [ getClosureBaseFile sources ]
-  let list = new System.Collections.Generic.List<string>()
+  let baseFile = getClosureBaseFile sources
+  let list = ResizeArray()
   let dependencies = resolveDependencies ns list providesMap [] |> Seq.toList
-  baseFile @ dependencies
+  baseFile :: dependencies
     |> Seq.map (fun s -> sprintf "--js=%s" s)
     |> Seq.toList
 
