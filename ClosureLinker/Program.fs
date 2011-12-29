@@ -7,7 +7,7 @@ open Microsoft.FSharp.Collections
 
 type Source =
   { Path: string; Provides: string list; Requires: string list; Text: string }
-  override x.ToString() = x.Path
+  override this.ToString() = this.Path
 
 type Output = { Namespace: string; Flags: string list; File: string }
 type Flags = { Namespaces: string list; Flags: string list }
@@ -134,17 +134,19 @@ let writeFlagsFiles options sources providesMap =
     let fileName = Path.Combine(options.Root, sprintf "%s.txt" ns)
     writeFlagsFile sources providesMap { Namespace = ns; Flags = commonFlags @ nsFlags; File = fileName }
 
-let getFilesRec root = Directory.GetFiles(root, "*.js", SearchOption.AllDirectories)
+let getFilesRec root = Directory.GetFiles(root, "*.js", SearchOption.AllDirectories)ú[
 
-let main (args: string array) =
+[<STAThread>]
+[<EntryPoint>]
+let main (args) =
   let inputFile = args.[1]
   let options = Options.parse inputFile
   let sources = getFilesRec options.Root |> Seq.sort |> PSeq.map Sources.parseSource |> PSeq.toList
   let providesMap = getProvidesMap sources
   ensureRequiredNamespaces sources providesMap
   writeFlagsFiles options sources providesMap
+  0
 
-main (Environment.GetCommandLineArgs())
 (*
 <linker>
   <root>c:\projects\sitepolis\trunk\src\SmartWeb.Web\Assets\js\</root>
