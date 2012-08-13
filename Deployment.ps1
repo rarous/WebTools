@@ -15,3 +15,9 @@ function Deploy-Package {
     $dest = "auto,computerName=$serverUrl,username=$UserName,password=$Password,authtype=basic"
     Exec { & $MsDeploy_Dir\MsDeploy -verb:sync -source:package=$PkgLocation -dest:$dest -allowUntrusted }
 }
+
+function Transform-Config {
+    param([string] $source, [string] $transform, [string] $destination = '')
+    if (-not $destination) { $destination = $source; }
+    Exec { MsBuild TransformHelper.build /p:Source=$source /p:Transform=$transform /p:Destination=$destination }
+}
