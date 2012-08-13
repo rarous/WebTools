@@ -1,7 +1,9 @@
-function Deploy-Package {
-    param($Project, $Configuration, $PkgLocation, $DestServer, $SiteName, $UserName, $Password)
+
+
+function Create-Package {
+    param($Project, $Configuration, $PkgLocation)
     
-    Write-Host Cleaning project files
+    Write-Host "Cleaning project files"
     Exec { MsBuild $Project /t:Clean /p:Configuration=$Configuration /v:q }
     
     Write-Host "Staring building project $Project"
@@ -9,6 +11,12 @@ function Deploy-Package {
     
     Write-Host "Starting packaging project $Project"
     Exec { MsBuild $Project /t:Package /p:Configuration=$Configuration /p:PackageLocation=$PkgLocation /v:m }
+}
+
+function Deploy-Package {
+    param($Project, $Configuration, $PkgLocation, $DestServer, $SiteName, $UserName, $Password)
+    
+    Create-Package $Project $Configuration $PkgLocation;
     
     Write-Host "Starting deployment of site $SiteName to $DestServer"
     $serverUrl ="https://${DestServer}:8172/msdeploy.axd?site=$SiteName"
