@@ -1,5 +1,4 @@
 
-
 function Create-Package {
     param($Project, $Configuration, $PkgLocation)
     
@@ -27,5 +26,7 @@ function Deploy-Package {
 function Transform-Config {
     param([string] $source, [string] $transform, [string] $destination = '')
     if (-not $destination) { $destination = $source; }
-    Exec { MsBuild TransformHelper.build /p:Source=$source /p:Transform=$transform /p:Destination=$destination }
+    Exec { MsBuild TransformHelper.build /p:Source=$source /p:Transform=$transform /p:Destination=$destination.tmp }
+    Remove-Item $destination -force
+    Rename-Item "$destination.tmp" $destination -force
 }
